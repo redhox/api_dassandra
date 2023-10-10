@@ -1,0 +1,56 @@
+version: '3.1'
+
+networks:
+  app-tier:
+    driver: bridge
+
+services:
+  flask-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 5000:5000
+    depends_on:
+      - cassandra-seed
+      - cassandra-node02
+      - cassandra-node03
+    networks:
+      - app-tier
+
+  cassandra-seed:
+    image: cassandra:latest
+    container_name: cassandra-c01b
+    ports:
+      - 9042:9042
+    environment:
+      - CASSANDRA_SEEDS=cassandra-c01b,cassandra-node02b,cassandra-node03b
+      - CASSANDRA_CLUSTER_NAME=Formation
+    networks:
+      - app-tier
+
+  cassandra-node02:
+    image: cassandra:latest
+    container_name: cassandra-node02b
+    ports:
+      - 9043:9042
+    environment:
+      - CASSANDRA_SEEDS=cassandra-c01b,cassandra-node02b,cassandra-node03b
+      - CASSANDRA_CLUSTER_NAME=Formation
+    depends_on:
+      - cassandra-seed
+    networks:
+      - app-tier
+
+  cassandra-node03:
+    image: cassandra:latest
+    container_name: cassandra-node03b
+    ports:
+      - 9044:9042
+    environment:
+      - CASSANDRA_SEEDS=cassandra-c01b,cassandra-node02b,cassandra-node03b
+      - CASSANDRA_CLUSTER_NAME=Formation
+    depends_on:
+      - cassandra-node02
+    networks:
+      - app-tier

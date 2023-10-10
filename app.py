@@ -4,6 +4,9 @@ from cassandra.cluster import Cluster
 app = Flask(__name__)
 
 cluster = Cluster(['172.26.0.2', '172.26.0.2', '172.26.0.3'])
+#cluster = Cluster(['172.27.0.2:9042', '172.27.0.3:9043', '172.27.0.4:9044'])
+#cluster = Cluster(['cassandra-seed', 'cassandra-node02', 'cassandra-node03'])
+
 session = cluster.connect("resto")
 
 @app.route('/restaurant/')
@@ -26,7 +29,7 @@ def get_restaurants_by_cuisine(cuisine):
 
 @app.route('/restaurant/<int:id>/inspections', methods=['GET'])
 def get_inspections(id):
-    result = session.execute(f"SELECT COUNT(*) FROM inspection WHERE restaurant_id = {id}")
+    result = session.execute(f"SELECT COUNT(*) FROM inspection WHERE idrestaurant = {id}")
     count = result.one()
     return jsonify(count)
 
@@ -34,8 +37,6 @@ def get_inspections(id):
 def get_top10_restaurants(grade):
     result = session.execute(f"SELECT idrestaurant FROM inspection WHERE grade = '{grade}' LIMIT 10")
     restaurant_ids = result.all()
-    
-    # Récupérer les noms des restaurants correspondant aux id récupérés
     restaurant_names = []
     for row in restaurant_ids:
         restaurant_id = row.idrestaurant
@@ -47,7 +48,8 @@ def get_top10_restaurants(grade):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    #app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000)
 
 
 
